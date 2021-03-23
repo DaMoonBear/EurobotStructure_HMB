@@ -91,7 +91,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
         }
 
         /*************************************** Outgoing Events ************************************/
-
+        
         public event EventHandler<LocationArgs> OnGhostLocationEvent;
         public virtual void OnGhostLocation(int id, Location loc)
         {
