@@ -15,6 +15,7 @@ using SciChart.Charting.Visuals;
 using Positioning2WheelsNS;
 using TrajectoryGeneratorNonHolonomeNS;
 using WorldMapManager;
+using Lidar;
 
 namespace RobotEurobot2Roues
 {
@@ -28,6 +29,7 @@ namespace RobotEurobot2Roues
         static XBoxController xBoxManette;
         static StrategyGenerique strategyManager;
         static LocalWorldMapManager localWorldMapManager;
+        static SickLidar tim561;
 
         static Positioning2Wheels positioning2Wheels;
         static TrajectoryGeneratorNonHolonome trajectoryGenerator;
@@ -58,6 +60,7 @@ namespace RobotEurobot2Roues
             localWorldMapManager = new LocalWorldMapManager(robotId, teamId, bypassMulticast: false);
             positioning2Wheels = new Positioning2Wheels(robotId);
             trajectoryGenerator = new TrajectoryGeneratorNonHolonome(robotId);
+            tim561 = new SickLidar(17361121);
 
             /// Création des liens entre module, sauf depuis et vers l'interface graphique           
             usbDriver.OnUSBDataReceivedEvent += msgDecoder.DecodeMsgReceived;                                   // Transmission des messages reçus par l'USB au Message Decoder
@@ -77,10 +80,13 @@ namespace RobotEurobot2Roues
             positioning2Wheels.OnCalculatedLocationEvent += trajectoryGenerator.OnPhysicalPositionReceived;                 //Envoi du positionnement calculé au module de génération de trajectoire
             positioning2Wheels.OnCalculatedLocationEvent += localWorldMapManager.OnPhysicalPositionReceived;            
             trajectoryGenerator.OnGhostLocationEvent += localWorldMapManager.OnGhostLocationReceived;
+            //robotMsgProcessor. += localWorldMapManager.OnProcessedLidarDataReceived;
 
             strategyManager.InitStrategy(); //à faire après avoir abonné les events !
 
             StartRobotInterface();
+
+            tim561.Start();
 
 
             while (!exitSystem)
@@ -142,6 +148,7 @@ namespace RobotEurobot2Roues
             robotMsgGenerator.OnSetSpeedConsigneToRobotReceivedEvent += interfaceRobot.UpdatePolarSpeedConsigneOnGraph; //Valable quelque soit la source des consignes vitesse
 
             localWorldMapManager.OnLocalWorldMapForDisplayOnlyEvent += interfaceRobot.OnLocalWorldMapStrategyEvent;
+           // tim561.PointsAvailable += interfaceRobot.OnRawLidarDataReceived;
 
             /// Envoi des ordres en provenance de l'interface graphique
             interfaceRobot.OnEnableDisableMotorsFromInterfaceGeneratedEvent += robotMsgGenerator.GenerateMessageEnableDisableMotors;
